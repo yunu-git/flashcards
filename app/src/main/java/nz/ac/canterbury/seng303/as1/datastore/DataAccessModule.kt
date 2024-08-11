@@ -8,7 +8,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.FlowPreview
+import nz.ac.canterbury.seng303.as1.models.Flashcard
 import nz.ac.canterbury.seng303.as1.models.Note
+import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.NoteViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -31,5 +33,23 @@ val dataAccessModule = module {
 
     viewModel {
         NoteViewModel(noteStorage = get())
+    }
+}
+
+@FlowPreview
+val dataAccessModule2 = module {
+    single<Storage<Flashcard>> {
+        PersistentStorage(
+            gson = get(),
+            type = object: TypeToken<List<Flashcard>>() {}.type,
+            preferenceKey = stringPreferencesKey("flashcards"),
+            dataStore = androidContext().dataStore
+        )
+    }
+
+    single { Gson() }
+
+    viewModel {
+        FlashcardViewModel(flashcardStorage = get())
     }
 }
