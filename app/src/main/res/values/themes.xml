@@ -2,4 +2,9 @@
 <resources>
 
     <style name="Theme.As1" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.As1.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/flashcard_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.As1</item>
+    </style>
 </resources>
