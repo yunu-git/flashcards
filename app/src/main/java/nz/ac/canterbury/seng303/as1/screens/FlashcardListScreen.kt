@@ -6,9 +6,13 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,10 +53,106 @@ import nz.ac.canterbury.seng303.as1.viewmodels.NoteViewModel
 @Composable
 fun FlashcardList(navController: NavController, flashcardViewModel: FlashcardViewModel) {
     flashcardViewModel.getFlashcards()
+    val configuration = LocalConfiguration.current
     val flashcards: List<Flashcard> by flashcardViewModel.flashcards.collectAsState(emptyList())
-    LazyColumn {
-        items(flashcards) { flashcard ->
-            Flashcard(navController = navController, flashcard = flashcard)
+    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+    if (isPortrait) {
+        VerticalFlashcardList(
+            navController = navController,
+            flashcards = flashcards
+        )
+    } else {
+        HorizontalFlashcardList(
+            navController = navController,
+            flashcards = flashcards
+        )
+    }
+}
+
+@Composable
+fun VerticalFlashcardList(navController: NavController, flashcards: List<Flashcard>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        if (flashcards.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "No flashcards available.",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+                    Text(
+                        text = "Please create some.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        } else {
+            LazyColumn {
+                items(flashcards) { flashcard ->
+                    Flashcard(
+                        navController = navController,
+                        flashcard = flashcard
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HorizontalFlashcardList(navController: NavController, flashcards: List<Flashcard>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        if (flashcards.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "No flashcards available.",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+                    Text(
+                        text = "Please create some.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        } else {
+            LazyColumn {
+                items(flashcards) { flashcard ->
+                    Flashcard(
+                        navController = navController,
+                        flashcard = flashcard
+                    )
+                }
+            }
         }
     }
 }

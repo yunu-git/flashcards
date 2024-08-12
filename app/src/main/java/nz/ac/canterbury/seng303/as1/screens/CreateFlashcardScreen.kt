@@ -1,16 +1,9 @@
 package nz.ac.canterbury.seng303.as1.screens
 
 import android.app.AlertDialog
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -22,31 +15,33 @@ import nz.ac.canterbury.seng303.as1.models.Answer
 @Composable
 fun CreateFlashcardScreen(
     navController: NavController,
-    term: String,
-    onTermChange: (String) -> Unit,
-    definitions: List<Answer>,
-    onDefinitionChange: (List<Answer>) -> Unit,
-    createFlashcardFn: (String, List<Answer>) -> Unit,
+    initialTerm: String,
+    initialDefinitions: List<Answer>,
+    createFlashcardFn: (String, List<Answer>) -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
 
+    // Maintain the state for term and definitions
+    var term by remember { mutableStateOf(initialTerm) }
+    var definitions by remember { mutableStateOf(initialDefinitions.toMutableList()) }
+
     if (isPortrait) {
-        CreateFlashcard(
+        VerticalCreateFlashcard(
             navController = navController,
             term = term,
-            onTermChange = onTermChange,
+            onTermChange = { term = it },
             definitions = definitions,
-            onDefinitionChange = onDefinitionChange,
+            onDefinitionChange = { definitions = it.toMutableList() },
             createFlashcardFn = createFlashcardFn
         )
     } else {
-        CreateFlashcardHorizontal(
+        HorizontalCreateFlashcard(
             navController = navController,
             term = term,
-            onTermChange = onTermChange,
+            onTermChange = { term = it },
             definitions = definitions,
-            onDefinitionChange = onDefinitionChange,
+            onDefinitionChange = { definitions = it.toMutableList() },
             createFlashcardFn = createFlashcardFn
         )
     }
@@ -54,13 +49,13 @@ fun CreateFlashcardScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateFlashcard(
+fun VerticalCreateFlashcard(
     navController: NavController,
     term: String,
     onTermChange: (String) -> Unit,
     definitions: List<Answer>,
     onDefinitionChange: (List<Answer>) -> Unit,
-    createFlashcardFn: (String, List<Answer>) -> Unit,
+    createFlashcardFn: (String, List<Answer>) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -71,34 +66,57 @@ fun CreateFlashcard(
     ) {
         OutlinedTextField(
             value = term,
-            onValueChange = {onTermChange(it)},
-            label = { Text("term") },
+            onValueChange = { onTermChange(it) },
+            label = { Text("Term") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
         )
 
+        definitions.forEachIndexed { index, answer ->
+            OutlinedTextField(
+                value = answer.text,
+                onValueChange = { newDefinition ->
+                    val newDefinitions = definitions.toMutableList()
+                    newDefinitions[index] = answer.copy(text = newDefinition, isCorrect = answer.isCorrect)
+                    onDefinitionChange(newDefinitions)
+                },
+                label = { Text("Definition ${index + 1}") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+        }
 
+        Button(
+            onClick = {
+                val newDefinitions = definitions.toMutableList()
+                newDefinitions.add(Answer(text = "", isCorrect = false))
+                onDefinitionChange(newDefinitions)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "+ Add Definition")
+        }
 
-        // Save button
         Button(
             onClick = {
                 createFlashcardFn(term, definitions)
                 val builder = AlertDialog.Builder(context)
                 builder.setMessage("Created flashcard!")
                     .setCancelable(false)
-                    .setPositiveButton("Ok") { dialog, id ->
+                    .setPositiveButton("Ok") { dialog, _ ->
                         onTermChange("")
                         onDefinitionChange(emptyList())
                         navController.navigate("flashcardList")
                     }
-                    .setNegativeButton("Cancel") { dialog, id ->
-                        // Dismiss the dialog
+                    .setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()
                     }
                 val alert = builder.create()
                 alert.show()
-
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -110,50 +128,78 @@ fun CreateFlashcard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateFlashcardHorizontal(
+fun HorizontalCreateFlashcard(
     navController: NavController,
     term: String,
     onTermChange: (String) -> Unit,
     definitions: List<Answer>,
     onDefinitionChange: (List<Answer>) -> Unit,
-    createFlashcardFn: (String, List<Answer>) -> Unit,
+    createFlashcardFn: (String, List<Answer>) -> Unit
 ) {
     val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Row for term and Content input fields
-        androidx.compose.foundation.layout.Row(
+        Row(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            // term input
             OutlinedTextField(
                 value = term,
                 onValueChange = { onTermChange(it) },
-                label = { Text("term") },
+                label = { Text("Term") },
                 modifier = Modifier
                     .fillMaxWidth(0.5f)
                     .padding(end = 8.dp)
             )
 
-            // Content input
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                definitions.forEachIndexed { index, answer ->
+                    OutlinedTextField(
+                        value = answer.text,
+                        onValueChange = { newDefinition ->
+                            val newDefinitions = definitions.toMutableList()
+                            newDefinitions[index] = answer.copy(text = newDefinition)
+                            onDefinitionChange(newDefinitions)
+                        },
+                        label = { Text("Definition ${index + 1}") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        val newDefinitions = definitions.toMutableList()
+                        newDefinitions.add(Answer(text = "", isCorrect = false))
+                        onDefinitionChange(newDefinitions)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(text = "+ Add Definition")
+                }
+            }
         }
 
-        // Save button
         Button(
             onClick = {
                 createFlashcardFn(term, definitions)
                 val builder = AlertDialog.Builder(context)
-                builder.setMessage("Created note!")
+                builder.setMessage("Created flashcard!")
                     .setCancelable(false)
                     .setPositiveButton("Ok") { dialog, _ ->
                         onTermChange("")
                         onDefinitionChange(emptyList())
-                        navController.navigate("noteList")
+                        navController.navigate("flashcardList")
                     }
                     .setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()

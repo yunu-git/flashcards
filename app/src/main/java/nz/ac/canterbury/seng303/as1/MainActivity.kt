@@ -28,12 +28,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import nz.ac.canterbury.seng303.as1.screens.CreateFlashcardScreen
 import nz.ac.canterbury.seng303.as1.screens.CreateNoteScreen
 import nz.ac.canterbury.seng303.as1.screens.FlashcardList
 import nz.ac.canterbury.seng303.as1.screens.NoteCard
 import nz.ac.canterbury.seng303.as1.screens.NoteGrid
 import nz.ac.canterbury.seng303.as1.screens.NoteList
 import nz.ac.canterbury.seng303.as1.ui.theme.Lab2Theme
+import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateNoteViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.NoteViewModel
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Box(modifier = Modifier.padding(it)) {
                         val createNoteViewModel: CreateNoteViewModel = viewModel()
+                        val createFlashcardViewModel: CreateFlashcardViewModel = viewModel()
                         NavHost(navController = navController, startDestination = "Home") {
                             composable("Home") {
                                 Home(navController = navController)
@@ -103,6 +106,14 @@ class MainActivity : ComponentActivity() {
                             composable("FlashcardList") {
                                 FlashcardList(navController, flashcardViewModel)
                             }
+                            composable("CreateFlashcard") {
+                                CreateFlashcardScreen(
+                                    navController = navController,
+                                    initialTerm = createFlashcardViewModel.term,
+                                    initialDefinitions = createFlashcardViewModel.answers,
+                                    createFlashcardFn = {term, defs -> flashcardViewModel.createFlashcard(term, defs)}
+                                )
+                            }
                         }
                     }
                 }
@@ -121,6 +132,9 @@ fun Home(navController: NavController) {
     ) {
         Text("Welcome to Flashcards!")
         Button(onClick = { navController.navigate("CreateNote") }) {
+            Text("Create Note")
+        }
+        Button(onClick = { navController.navigate("CreateFlashcard") }) {
             Text("Create Flashcard")
         }
         Button(onClick = { navController.navigate("NoteCard/1") }) {
