@@ -225,7 +225,7 @@ fun Flashcard(navController: NavController, flashcard: Flashcard) {
                     .setCancelable(false)
                     .setPositiveButton("Delete") { dialog, _ ->
                         dialog.dismiss()
-                        // Handle delete action here
+                        //TODO Handle delete action here
                     }
                     .setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()
