@@ -11,7 +11,7 @@ class CreateFlashcardViewModel : ViewModel() {
     var term by mutableStateOf("")
         private set
 
-    var answers by mutableStateOf(listOf<Answer>())
+    var answers by mutableStateOf(listOf<Answer>(Answer("", false), Answer("", false)))
         private set
 
     fun updateTerm(newTerm: String) {
@@ -24,6 +24,10 @@ class CreateFlashcardViewModel : ViewModel() {
         }
     }
 
+    fun updateAnswers(newAnswers: List<Answer>) {
+        answers = newAnswers;
+    }
+
     fun addAnswer(answer: Answer) {
         answers = answers.toMutableList().apply { add(answer) }
     }
@@ -31,6 +35,16 @@ class CreateFlashcardViewModel : ViewModel() {
     fun removeAnswer(index: Int) {
         if (index in answers.indices) {
             answers = answers.toMutableList().apply { removeAt(index) }
+        }
+    }
+
+    fun updateCorrect(index: Int, selected: Boolean) {
+        answers = answers.mapIndexed { i, answer ->
+            if (i == index) {
+                answer.copy(isCorrect = selected)
+            } else {
+                answer.copy(isCorrect = false)
+            }
         }
     }
 

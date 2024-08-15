@@ -114,9 +114,8 @@ class MainActivity : ComponentActivity() {
                             composable("CreateFlashcard") {
                                 CreateFlashcardScreen(
                                     navController = navController,
-                                    initialTerm = createFlashcardViewModel.term,
-                                    initialDefinitions = createFlashcardViewModel.answers,
-                                    createFlashcardFn = {term, defs -> flashcardViewModel.createFlashcard(term, defs)}
+                                    createFlashcardFn = {term, defs -> flashcardViewModel.createFlashcard(term, defs)},
+                                    viewModel = createFlashcardViewModel
                                 )
                             }
                         }
