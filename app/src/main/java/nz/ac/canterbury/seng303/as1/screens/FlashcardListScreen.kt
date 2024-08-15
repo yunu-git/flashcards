@@ -59,18 +59,23 @@ fun FlashcardList(navController: NavController, flashcardViewModel: FlashcardVie
     if (isPortrait) {
         VerticalFlashcardList(
             navController = navController,
+            flashcardViewModel = flashcardViewModel,
             flashcards = flashcards
         )
     } else {
         HorizontalFlashcardList(
             navController = navController,
+            flashcardViewModel = flashcardViewModel,
             flashcards = flashcards
         )
     }
 }
 
 @Composable
-fun VerticalFlashcardList(navController: NavController, flashcards: List<Flashcard>) {
+fun VerticalFlashcardList(
+    navController: NavController,
+    flashcardViewModel: FlashcardViewModel,
+    flashcards: List<Flashcard>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -105,6 +110,7 @@ fun VerticalFlashcardList(navController: NavController, flashcards: List<Flashca
                 items(flashcards) { flashcard ->
                     Flashcard(
                         navController = navController,
+                        deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
                         flashcard = flashcard
                     )
                 }
@@ -114,7 +120,10 @@ fun VerticalFlashcardList(navController: NavController, flashcards: List<Flashca
 }
 
 @Composable
-fun HorizontalFlashcardList(navController: NavController, flashcards: List<Flashcard>) {
+fun HorizontalFlashcardList(
+    navController: NavController,
+    flashcardViewModel: FlashcardViewModel,
+    flashcards: List<Flashcard>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -149,6 +158,7 @@ fun HorizontalFlashcardList(navController: NavController, flashcards: List<Flash
                 items(flashcards) { flashcard ->
                     Flashcard(
                         navController = navController,
+                        deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
                         flashcard = flashcard
                     )
                 }
@@ -158,7 +168,11 @@ fun HorizontalFlashcardList(navController: NavController, flashcards: List<Flash
 }
 
 @Composable
-fun Flashcard(navController: NavController, flashcard: Flashcard) {
+fun Flashcard(
+    navController: NavController,
+    deleteFn: (Int) -> Unit,
+    flashcard: Flashcard
+) {
     val context = LocalContext.current
     ElevatedCard(
         modifier = Modifier
@@ -197,7 +211,6 @@ fun Flashcard(navController: NavController, flashcard: Flashcard) {
             horizontalArrangement = Arrangement.End
         ) {
 
-
             IconButton(onClick = {
                 val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
                     putExtra(SearchManager.QUERY, flashcard.term)
@@ -211,7 +224,7 @@ fun Flashcard(navController: NavController, flashcard: Flashcard) {
                 )
             }
             IconButton(onClick = {
-                Toast.makeText(context, "Can't do that just yet! we'll learn to handle state in this lab", Toast.LENGTH_SHORT).show()
+               navController.navigate("EditFlashcard/${flashcard.id}")
             }) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
@@ -224,8 +237,8 @@ fun Flashcard(navController: NavController, flashcard: Flashcard) {
                 builder.setMessage("Delete flashcard: \"${flashcard.term}\"?")
                     .setCancelable(false)
                     .setPositiveButton("Delete") { dialog, _ ->
+                        deleteFn(flashcard.id)
                         dialog.dismiss()
-                        //TODO Handle delete action here
                     }
                     .setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()

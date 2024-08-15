@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import nz.ac.canterbury.seng303.as1.screens.CreateFlashcardScreen
 import nz.ac.canterbury.seng303.as1.screens.CreateNoteScreen
+import nz.ac.canterbury.seng303.as1.screens.EditFlashcardScreen
 import nz.ac.canterbury.seng303.as1.screens.FlashcardList
 import nz.ac.canterbury.seng303.as1.screens.NoteCard
 import nz.ac.canterbury.seng303.as1.screens.NoteGrid
@@ -39,6 +40,7 @@ import nz.ac.canterbury.seng303.as1.screens.NoteList
 import nz.ac.canterbury.seng303.as1.ui.theme.Lab2Theme
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateNoteViewModel
+import nz.ac.canterbury.seng303.as1.viewmodels.EditFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.NoteViewModel
 
@@ -79,6 +81,7 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.padding(it)) {
                         val createNoteViewModel: CreateNoteViewModel = viewModel()
                         val createFlashcardViewModel: CreateFlashcardViewModel = viewModel()
+                        val editFlashcardViewModel: EditFlashcardViewModel = viewModel()
                         NavHost(navController = navController, startDestination = "Home") {
                             composable("Home") {
                                 Home(navController = navController)
@@ -109,7 +112,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable("FlashcardList") {
-                                FlashcardList(navController, flashcardViewModel)
+                                FlashcardList(
+                                    navController = navController,
+                                    flashcardViewModel = flashcardViewModel
+                                )
                             }
                             composable("CreateFlashcard") {
                                 CreateFlashcardScreen(
@@ -118,6 +124,14 @@ class MainActivity : ComponentActivity() {
                                     viewModel = createFlashcardViewModel
                                 )
                             }
+                            composable("EditFlashcard/{flashcardId}", arguments = listOf(navArgument("flashcardId") {
+                                type = NavType.StringType
+                            })
+                            ) { backStackEntry ->
+                                val noteId = backStackEntry.arguments?.getString("flashcardId")
+                                noteId?.let { flashcardIdParam: String -> EditFlashcardScreen(flashcardIdParam, navController, editFlashcardViewModel, flashcardViewModel) }
+                            }
+
                         }
                     }
                 }

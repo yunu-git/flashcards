@@ -59,4 +59,24 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
             Log.e("FLASHCARD_VIEW_MODEL", it.toString())
         }.collect{_flashcards.emit(it)}
     }
+
+    fun deleteFlashcardById(flashcardId: Int?) = viewModelScope.launch {
+        Log.d("FLASHCARD_VIEW_MODEL", "Deleting flashcard: $flashcardId")
+        if (flashcardId != null) {
+            flashcardStorage.delete(flashcardId).collect{}
+            flashcardStorage.getAll().catch {
+                Log.e("FLASHCARD_VIEW_MODEL", it.toString())
+            }.collect { _flashcards.emit(it) }
+        }
+    }
+
+    fun editFlashcardById(flashcardId: Int?, flashcard: Flashcard) = viewModelScope.launch {
+        Log.d("FLASHCARD_VIEW_MODEL", "Editing flashcard: $flashcardId")
+        if (flashcardId != null) {
+            flashcardStorage.edit(flashcardId, flashcard).collect{}
+            flashcardStorage.getAll().catch { Log.e("FLASHCARD_VIEW_MODEL", it.toString()) }
+                .collect { _flashcards.emit(it) }
+        }
+    }
+
 }
