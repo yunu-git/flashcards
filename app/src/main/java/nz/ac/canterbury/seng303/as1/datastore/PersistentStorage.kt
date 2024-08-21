@@ -53,7 +53,7 @@ class PersistentStorage<T> (
         return flow {
             val cachedDataClone = getAll().first().toMutableList()
             val index = cachedDataClone.indexOfFirst { it.getIdentifier() == identifier }
-            if (index == -1) {
+            if (index != -1) {
                 cachedDataClone[index] = data
                 dataStore.edit {
                     val jsonString = gson.toJson(cachedDataClone, type)

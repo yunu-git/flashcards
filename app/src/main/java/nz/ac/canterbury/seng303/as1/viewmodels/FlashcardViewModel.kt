@@ -19,9 +19,9 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
 
     private val _selectedFlashcard = MutableStateFlow<Flashcard?>(null)
     val selectedFlashcard: StateFlow<Flashcard?> = _selectedFlashcard
-    fun getFlashcardById(noteId: Int?) = viewModelScope.launch{
-        if (noteId != null) {
-            _selectedFlashcard.value = flashcardStorage.get {it.getIdentifier() == noteId}.first()
+    fun getFlashcardById(flashcardId: Int?) = viewModelScope.launch{
+        if (flashcardId != null) {
+            _selectedFlashcard.value = flashcardStorage.get {it.getIdentifier() == flashcardId}.first()
         } else {
             _selectedFlashcard.value = null
         }

@@ -39,7 +39,7 @@ fun EditFlashcardScreen(
     val selectedFlashcardState by flashcardViewModel.selectedFlashcard.collectAsState(null)
     val flashcard: Flashcard? = selectedFlashcardState // we explicitly assign to note to help the compilers smart cast out
 
-    LaunchedEffect(flashcard) {  // Get the default values for the note properties
+    LaunchedEffect(flashcard) {
         if (flashcard == null) {
             flashcardViewModel.getFlashcardById(flashcardId.toIntOrNull())
         } else {

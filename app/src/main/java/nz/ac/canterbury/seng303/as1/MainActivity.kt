@@ -37,6 +37,7 @@ import nz.ac.canterbury.seng303.as1.screens.FlashcardList
 import nz.ac.canterbury.seng303.as1.screens.NoteCard
 import nz.ac.canterbury.seng303.as1.screens.NoteGrid
 import nz.ac.canterbury.seng303.as1.screens.NoteList
+import nz.ac.canterbury.seng303.as1.screens.ViewFlashcard
 import nz.ac.canterbury.seng303.as1.ui.theme.Lab2Theme
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateNoteViewModel
@@ -130,6 +131,13 @@ class MainActivity : ComponentActivity() {
                             ) { backStackEntry ->
                                 val noteId = backStackEntry.arguments?.getString("flashcardId")
                                 noteId?.let { flashcardIdParam: String -> EditFlashcardScreen(flashcardIdParam, navController, editFlashcardViewModel, flashcardViewModel) }
+                            }
+                            composable("viewFlashcard/{flashcardId}", arguments = listOf(navArgument("flashcardId") {
+                                type = NavType.StringType
+                            })
+                            ) { backStackEntry ->
+                                val noteId = backStackEntry.arguments?.getString("flashcardId")
+                                noteId?.let { flashcardIdParam: String -> ViewFlashcard(flashcardIdParam, navController, flashcardViewModel) }
                             }
 
                         }

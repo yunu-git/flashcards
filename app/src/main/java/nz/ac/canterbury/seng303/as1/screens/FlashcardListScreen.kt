@@ -177,7 +177,10 @@ fun Flashcard(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable {
+                navController.navigate("ViewFlashcard/${flashcard.id}")
+            },
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
         ),
