@@ -2,6 +2,8 @@ package nz.ac.canterbury.seng303.as1.screens
 
 import android.app.AlertDialog
 import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -127,31 +129,35 @@ fun VerticalCreateFlashcard(
             ) {
                 Text(text = "+ Add Definition")
             }
-
             Button(
                 onClick = {
-                    val builder = AlertDialog.Builder(context)
-                    createFlashcardFn(term, definitions)
-                    builder.setMessage("Created flashcard!")
-                        .setCancelable(false)
-                        .setPositiveButton("Ok") { dialog, _ ->
-                            onTermChange("")
-                            onDefinitionChange(listOf(Answer("", false), Answer("", false)))
-                            navController.navigate("flashcardList")
-                        }
-                        .setNegativeButton("Cancel") { dialog, _ ->
-                            dialog.dismiss()
-                        }
+                    if (term.isNotBlank() && definitions.any { d ->
+                    d.isCorrect && d.text.isNotBlank() }) {
+                        val builder = AlertDialog.Builder(context)
+                        createFlashcardFn(term, definitions)
+                        builder.setMessage("Created flashcard!")
+                            .setCancelable(false)
+                            .setPositiveButton("Ok") { dialog, _ ->
+                                onTermChange("")
+                                onDefinitionChange(listOf(Answer("", false), Answer("", false)))
+                                navController.navigate("flashcardList")
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
 
-                    val alert = builder.create()
-                    alert.show()
+                        val alert = builder.create()
+                        alert.show()
+                    } else {
+                        Toast.makeText(context, "Please add a term, at least two definitions, and one answer.", Toast.LENGTH_LONG).show()
+                    }
                 },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
-                enabled = term.isNotBlank() && definitions.any { d ->
-                    d.isCorrect && d.text.isNotBlank()
-                }
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (term.isNotBlank() && definitions.any { d -> d.isCorrect && d.text.isNotBlank() }) Color(ContextCompat.getColor(context, R.color.theme_color)) else Color.LightGray
+                )
             ) {
                 Text(text = "Save")
             }
@@ -233,28 +239,33 @@ fun HorizontalCreateFlashcard(
 
             Button(
                 onClick = {
-                    val builder = AlertDialog.Builder(context)
-                    createFlashcardFn(term, definitions)
-                    builder.setMessage("Created flashcard!")
-                        .setCancelable(false)
-                        .setPositiveButton("Ok") { dialog, _ ->
-                            onTermChange("")
-                            onDefinitionChange(listOf(Answer("", false), Answer("", false)))
-                            navController.navigate("flashcardList")
-                        }
-                        .setNegativeButton("Cancel") { dialog, _ ->
-                            dialog.dismiss()
-                        }
+                    if (term.isNotBlank() && definitions.any { d ->
+                            d.isCorrect && d.text.isNotBlank() }) {
+                        val builder = AlertDialog.Builder(context)
+                        createFlashcardFn(term, definitions)
+                        builder.setMessage("Created flashcard!")
+                            .setCancelable(false)
+                            .setPositiveButton("Ok") { dialog, _ ->
+                                onTermChange("")
+                                onDefinitionChange(listOf(Answer("", false), Answer("", false)))
+                                navController.navigate("flashcardList")
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
 
-                    val alert = builder.create()
-                    alert.show()
+                        val alert = builder.create()
+                        alert.show()
+                    } else {
+                        Toast.makeText(context, "Please add a term, at least two definitions, and one answer.", Toast.LENGTH_LONG).show()
+                    }
                 },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
-                enabled = term.isNotBlank() && definitions.any { d ->
-                    d.isCorrect && d.text.isNotBlank()
-                }
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (term.isNotBlank() && definitions.any { d -> d.isCorrect && d.text.isNotBlank() }) Color(ContextCompat.getColor(context, R.color.theme_color)) else Color.LightGray
+                )
             ) {
                 Text(text = "Save")
             }

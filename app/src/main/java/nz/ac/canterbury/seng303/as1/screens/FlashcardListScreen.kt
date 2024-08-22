@@ -45,10 +45,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import nz.ac.canterbury.seng303.as1.models.Flashcard
-import nz.ac.canterbury.seng303.as1.models.Note
 import nz.ac.canterbury.seng303.as1.util.convertTimestampToReadableTime
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
-import nz.ac.canterbury.seng303.as1.viewmodels.NoteViewModel
 
 @Composable
 fun FlashcardList(navController: NavController, flashcardViewModel: FlashcardViewModel) {
