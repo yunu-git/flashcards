@@ -17,10 +17,6 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
     private val _flashcards = MutableStateFlow<List<Flashcard>>(emptyList());
     val flashcards: StateFlow<List<Flashcard>> get() = _flashcards
 
-    private val _shuffledFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
-    val shuffledFlashcards: StateFlow<List<Flashcard>> get() = _shuffledFlashcards
-
-
     private val _selectedFlashcard = MutableStateFlow<Flashcard?>(null)
     val selectedFlashcard: StateFlow<Flashcard?> = _selectedFlashcard
 
@@ -39,9 +35,11 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
     private val _showEndScreen = MutableStateFlow(false)
     val showEndScreen: StateFlow<Boolean> get() = _showEndScreen
 
-    private fun shuffleFlashcards() {
-        _shuffledFlashcards.value = _flashcards.value.shuffled(Random)
-    }
+    private val _answerResults = MutableStateFlow<Map<Int, Boolean>>(emptyMap())
+    val answerResults: StateFlow<Map<Int, Boolean>> = _answerResults
+
+    private val _selectedAnswers = MutableStateFlow<List<String>>(emptyList())
+    val selectedAnswers: StateFlow<List<String>> = _selectedAnswers
 
     fun getFlashcardById(flashcardId: Int?) = viewModelScope.launch{
         if (flashcardId != null) {
@@ -56,16 +54,6 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
             Log.e("FLASHCARD_VIEW_MODEL", it.toString())
         }.collect{_flashcards.emit(it)}
     }
-
-    fun getShuffledFlashcards() = viewModelScope.launch {
-        flashcardStorage.getAll().catch {
-            Log.e("FLASHCARD_VIEW_MODEL", it.toString())
-        }.collect{
-            _flashcards.emit(it)
-            shuffleFlashcards()
-        }
-    }
-
 
     fun loadDefaultFlashcardsForTestingPurposes() = viewModelScope.launch {
         val currentFlashcards = flashcardStorage.getAll().first()
@@ -120,12 +108,23 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
     }
 
     fun submitAnswer() {
-        _showResult.value = true
-        _selectedAnswer.value?.let {
-            if (it.isCorrect) {
-                _score.value += 1
-            }
+        val currentFlashcard = flashcards.value.getOrNull(currentIndex.value)
+        val isCorrect = selectedAnswer.value?.isCorrect == true
+        val updatedResults = _answerResults.value.toMutableMap().apply {
+            put(currentIndex.value, isCorrect)
         }
+        _answerResults.value = updatedResults
+
+        val updatedSelectedAnswers = _selectedAnswers.value.toMutableList().apply {
+            selectedAnswer.value?.text?.let { add(it) }
+        }
+        _selectedAnswers.value = updatedSelectedAnswers
+
+        if (isCorrect) {
+            _score.value++
+        }
+
+        _showResult.value = true
     }
 
     fun nextFlashcard() {
@@ -145,6 +144,8 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
         _score.value = 0
         _showResult.value = false
         _showEndScreen.value = false
+        _answerResults.value = emptyMap()
+        _selectedAnswers.value = emptyList()
     }
 
 }

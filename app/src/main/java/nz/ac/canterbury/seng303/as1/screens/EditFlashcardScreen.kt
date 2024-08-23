@@ -1,7 +1,7 @@
 package nz.ac.canterbury.seng303.as1.screens
 
-import android.app.AlertDialog
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -21,7 +20,6 @@ import androidx.navigation.NavController
 import nz.ac.canterbury.seng303.as1.R
 import nz.ac.canterbury.seng303.as1.models.Answer
 import nz.ac.canterbury.seng303.as1.models.Flashcard
-import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.EditFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
 
@@ -33,8 +31,6 @@ fun EditFlashcardScreen(
     editFlashcardViewModel: EditFlashcardViewModel,
     flashcardViewModel: FlashcardViewModel
 ) {
-    val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
     val selectedFlashcardState by flashcardViewModel.selectedFlashcard.collectAsState(null)
     val flashcard: Flashcard? = selectedFlashcardState // we explicitly assign to note to help the compilers smart cast out
 
@@ -91,7 +87,15 @@ fun EditFlashcard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                isError = term.isBlank()
+                isError = term.isBlank(),
+                supportingText = {
+                    if (term.isBlank()) {
+                        Text(
+                            text = "Please enter a term.",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -132,34 +136,30 @@ fun EditFlashcard(
 
             Button(
                 onClick = {
-                    val builder = AlertDialog.Builder(context)
-                    editFlashcardFn(
-                        flashcardId.toIntOrNull(),
-                        Flashcard(
-                            flashcardId.toInt(),
-                            editFlashcardViewModel.term,
-                            editFlashcardViewModel.answers
-                        ))
-                    builder.setMessage("Edited flashcard!")
-                        .setCancelable(false)
-                        .setPositiveButton("Ok") { dialog, _ ->
-                            onTermChange("")
-                            onDefinitionChange(listOf(Answer("", false), Answer("", false)))
-                            navController.navigate("flashcardList")
-                        }
-                        .setNegativeButton("Cancel") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-
-                    val alert = builder.create()
-                    alert.show()
+                    if (term.isNotBlank() && definitions.any { d ->
+                            d.isCorrect && d.text.isNotBlank() }) {
+                        editFlashcardFn(
+                            flashcardId.toIntOrNull(),
+                            Flashcard(
+                                flashcardId.toInt(),
+                                editFlashcardViewModel.term,
+                                editFlashcardViewModel.answers
+                            )
+                        )
+                        navController.navigate("flashcardList")
+                        Toast.makeText(context, "Edited flashcard!", Toast.LENGTH_LONG).show()
+                        onTermChange("")
+                        onDefinitionChange(listOf(Answer("", false), Answer("", false)))
+                    } else {
+                        Toast.makeText(context, "Please add a term, at least two definitions, and one answer.", Toast.LENGTH_LONG).show()
+                    }
                 },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
-                enabled = term.isNotBlank() && definitions.any { d ->
-                    d.isCorrect && d.text.isNotBlank()
-                }
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (term.isNotBlank() && definitions.any { d -> d.isCorrect && d.text.isNotBlank() }) Color(ContextCompat.getColor(context, R.color.theme_color)) else Color.LightGray
+                )
             ) {
                 Text(text = "Save")
             }
@@ -205,7 +205,15 @@ fun DefinitionEntry(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                isError = answer.text.isBlank()
+                isError = answer.text.isBlank(),
+                supportingText = {
+                    if (answer.text.isBlank()) {
+                        Text(
+                            text = "Please enter an answer.",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             )
 
             Row(

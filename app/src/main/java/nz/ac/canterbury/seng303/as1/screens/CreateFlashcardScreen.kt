@@ -1,9 +1,7 @@
 package nz.ac.canterbury.seng303.as1.screens
 
-import android.app.AlertDialog
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -23,7 +20,6 @@ import androidx.navigation.NavController
 import nz.ac.canterbury.seng303.as1.R
 import nz.ac.canterbury.seng303.as1.models.Answer
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
-import nz.ac.canterbury.seng303.as1.viewmodels.EditFlashcardViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +71,15 @@ fun CreateFlashcard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                isError = term.isBlank()
+                isError = term.isBlank(),
+                supportingText = {
+                    if (term.isBlank()) {
+                        Text(
+                            text = "Please enter a term.",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -115,23 +119,13 @@ fun CreateFlashcard(
             }
             Button(
                 onClick = {
-                    if (term.isNotBlank() && definitions.any { d ->
-                    d.isCorrect && d.text.isNotBlank() }) {
-                        val builder = AlertDialog.Builder(context)
+                    if (term.isNotBlank() && definitions.any { d -> d.isCorrect && d.text.isNotBlank() }) {
                         createFlashcardFn(term, definitions)
-                        builder.setMessage("Created flashcard!")
-                            .setCancelable(false)
-                            .setPositiveButton("Ok") { dialog, _ ->
-                                onTermChange("")
-                                onDefinitionChange(listOf(Answer("", false), Answer("", false)))
-                                navController.navigate("flashcardList")
-                            }
-                            .setNegativeButton("Cancel") { dialog, _ ->
-                                dialog.dismiss()
-                            }
+                        navController.navigate("flashcardList")
+                        Toast.makeText(context, "Created flashcard!.", Toast.LENGTH_LONG).show()
+                        onTermChange("")
+                        onDefinitionChange(listOf(Answer("", false), Answer("", false)))
 
-                        val alert = builder.create()
-                        alert.show()
                     } else {
                         Toast.makeText(context, "Please add a term, at least two definitions, and one answer.", Toast.LENGTH_LONG).show()
                     }
@@ -187,7 +181,15 @@ fun DefinitionEntry(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                isError = answer.text.isBlank()
+                isError = answer.text.isBlank(),
+                supportingText = {
+                    if (answer.text.isBlank()) {
+                        Text(
+                            text = "Please enter an answer.",
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             )
 
             Row(
@@ -202,7 +204,6 @@ fun DefinitionEntry(
                     )
                 }
                 Checkbox(
-
                     checked = answer.isCorrect,
                     onCheckedChange = { isChecked ->
                         viewModel.updateCorrect(index, isChecked)

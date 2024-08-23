@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -64,41 +65,44 @@ fun ViewFlashcardScreen(
     var fabStateExpanded by rememberSaveable {
         mutableStateOf(false)
     }
-    Scaffold(
-        floatingActionButton = {
-            ExpandableFab(
-                navController = navController,
-                context = context,
-                flashcard = flashcard,
-                fabStateExpanded = fabStateExpanded,
-                onFabStateChange = {fabStateExpanded = it},
-                deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) }
-            )
 
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (flashcard == null) {
-                Text(
-                    text = "Loading flashcard...",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    textAlign = TextAlign.Center
+    if (flashcard != null) {
+        Scaffold(
+            floatingActionButton = {
+                ExpandableFab(
+                    navController = navController,
+                    context = context,
+                    flashcard = flashcard,
+                    fabStateExpanded = fabStateExpanded,
+                    onFabStateChange = {fabStateExpanded = it},
+                    deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) }
                 )
-            } else {
+
+            }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+
                 FlashcardView(
                     flashcard = flashcard,
                     flipped = flipped,
                     onFlip = { flipped = !flipped }
                 )
+
             }
         }
+    } else {
+        Text(
+            text = "Could not find flashcard: $flashcardId",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -229,27 +233,29 @@ fun ExpandableFab(
                         contentDescription = "Edit",
                     )
                 }
-                FloatingActionButton(
-                    onClick = {
-                        val builder = AlertDialog.Builder(context)
-                        builder.setMessage("Delete flashcard: \"${flashcard!!.term}\"?")
-                            .setCancelable(false)
-                            .setPositiveButton("Delete") { dialog, _ ->
-                                deleteFn(flashcard.id)
-                                dialog.dismiss()
-                            }
-                            .setNegativeButton("Cancel") { dialog, _ ->
-                                dialog.dismiss()
-                            }
-                        val alert = builder.create()
-                        alert.show()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                    )
-                }
+                //TODO: not sure why this doesn't work without the app crashing?
+//                FloatingActionButton(
+//                    onClick = {
+//                        val builder = AlertDialog.Builder(context)
+//                        builder.setMessage("Delete flashcard: \"${flashcard!!.term}\"?")
+//                            .setCancelable(false)
+//                            .setPositiveButton("Delete") { dialog, _ ->
+//                                navController.navigate("FlashcardList")
+//                                dialog.dismiss()
+//                                deleteFn(flashcard.id)
+//                            }
+//                            .setNegativeButton("Cancel") { dialog, _ ->
+//                                dialog.dismiss()
+//                            }
+//                        val alert = builder.create()
+//                        alert.show()
+//                    }
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.Delete,
+//                        contentDescription = "Delete",
+//                    )
+//                }
                 FloatingActionButton(
                     onClick = {
                         val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
