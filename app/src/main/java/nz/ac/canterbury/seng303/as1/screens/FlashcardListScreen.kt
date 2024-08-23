@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -98,9 +99,17 @@ fun VerticalFlashcardList(
                         modifier = Modifier.height(8.dp)
                     )
                     Text(
-                        text = "Please create some.",
+                        text = "You can create some here.",
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+                    Button(
+                        onClick = {navController.navigate("CreateFlashcard")}
+                    ) {
+                        Text(text = "Create Flashcards")
+                    }
                 }
             }
         } else {

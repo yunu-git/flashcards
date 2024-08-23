@@ -35,7 +35,7 @@ import nz.ac.canterbury.seng303.as1.screens.EditFlashcardScreen
 import nz.ac.canterbury.seng303.as1.screens.FlashcardList
 import nz.ac.canterbury.seng303.as1.screens.PlayFlashcardScreen
 import nz.ac.canterbury.seng303.as1.screens.ViewFlashcard
-import nz.ac.canterbury.seng303.as1.ui.theme.Lab2Theme
+import nz.ac.canterbury.seng303.as1.ui.theme.As1Theme
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.EditFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         flashcardViewModel.loadDefaultFlashcardsForTestingPurposes()
         setContent {
-            Lab2Theme {
+            As1Theme {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 Scaffold(
