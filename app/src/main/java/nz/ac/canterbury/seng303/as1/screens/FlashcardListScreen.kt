@@ -52,26 +52,17 @@ import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
 @Composable
 fun FlashcardList(navController: NavController, flashcardViewModel: FlashcardViewModel) {
     flashcardViewModel.getFlashcards()
-    val configuration = LocalConfiguration.current
     val flashcards: List<Flashcard> by flashcardViewModel.flashcards.collectAsState(emptyList())
-    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
-    if (isPortrait) {
-        VerticalFlashcardList(
-            navController = navController,
-            flashcardViewModel = flashcardViewModel,
-            flashcards = flashcards
-        )
-    } else {
-        HorizontalFlashcardList(
-            navController = navController,
-            flashcardViewModel = flashcardViewModel,
-            flashcards = flashcards
-        )
-    }
+
+    FlashcardList(
+        navController = navController,
+        flashcardViewModel = flashcardViewModel,
+        flashcards = flashcards
+    )
 }
 
 @Composable
-fun VerticalFlashcardList(
+fun FlashcardList(
     navController: NavController,
     flashcardViewModel: FlashcardViewModel,
     flashcards: List<Flashcard>) {
@@ -126,53 +117,6 @@ fun VerticalFlashcardList(
     }
 }
 
-@Composable
-fun HorizontalFlashcardList(
-    navController: NavController,
-    flashcardViewModel: FlashcardViewModel,
-    flashcards: List<Flashcard>) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        if (flashcards.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "No flashcards available.",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
-                    Text(
-                        text = "Please create some.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        } else {
-            LazyColumn {
-                items(flashcards) { flashcard ->
-                    Flashcard(
-                        navController = navController,
-                        deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
-                        flashcard = flashcard
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun Flashcard(

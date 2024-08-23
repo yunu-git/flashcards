@@ -1,23 +1,30 @@
 package nz.ac.canterbury.seng303.as1.screens
 
+import android.app.AlertDialog
 import android.app.SearchManager
+import android.content.Context
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -30,8 +37,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,29 +58,23 @@ fun ViewFlashcardScreen(
     flashcardViewModel.getFlashcardById(flashcardId = flashcardId.toIntOrNull())
     val selectedFlashcardState by flashcardViewModel.selectedFlashcard.collectAsState(null)
     val flashcard: Flashcard? = selectedFlashcardState
-    val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
 
     var flipped by rememberSaveable { mutableStateOf(false) }
 
+    var fabStateExpanded by rememberSaveable {
+        mutableStateOf(false)
+    }
     Scaffold(
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    if (flashcard != null) {
-                        val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-                            putExtra(SearchManager.QUERY, flashcard.term)
-                        }
-                        context.startActivity(intent)
-                    }
-                },
-                icon = {
-                    Icon(Icons.Filled.Search, contentDescription = "Search this term")
-                },
-                text = {
-                    Text(text = "Learn More")
-                }
+            ExpandableFab(
+                navController = navController,
+                context = context,
+                flashcard = flashcard,
+                fabStateExpanded = fabStateExpanded,
+                onFabStateChange = {fabStateExpanded = it},
+                deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) }
             )
+
         }
     ) { innerPadding ->
         Box(
@@ -92,8 +93,6 @@ fun ViewFlashcardScreen(
                 )
             } else {
                 FlashcardView(
-                    navController = navController,
-                    deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
                     flashcard = flashcard,
                     flipped = flipped,
                     onFlip = { flipped = !flipped }
@@ -106,13 +105,10 @@ fun ViewFlashcardScreen(
 
 @Composable
 fun FlashcardView(
-    navController: NavController,
-    deleteFn: (Int) -> Unit,
     flashcard: Flashcard,
     flipped: Boolean,
     onFlip: () -> Unit
 ) {
-    val context = LocalContext.current
 
     val rotation by animateFloatAsState(
         targetValue = if (flipped) 180f else 0f,
@@ -180,3 +176,95 @@ fun FlashcardView(
         }
     }
 }
+
+
+
+@Composable
+fun ExpandableFab(
+    navController: NavController,
+    context: Context,
+    flashcard: Flashcard?,
+    fabStateExpanded: Boolean,
+    onFabStateChange: (Boolean) -> Unit,
+    deleteFn: (Int) -> Unit
+) {
+    val rotation by animateFloatAsState(
+        targetValue = if (fabStateExpanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+        label = "rotate"
+    )
+    Box(
+        contentAlignment = Alignment.BottomEnd
+
+    ) {
+        FloatingActionButton(
+            onClick = {
+                onFabStateChange(!fabStateExpanded)
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = "Show More",
+                modifier = Modifier.rotate(rotation)
+            )
+        }
+        AnimatedVisibility(
+            visible = fabStateExpanded,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 72.dp)
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.End,
+
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate("EditFlashcard/${flashcard!!.id}")
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                    )
+                }
+                FloatingActionButton(
+                    onClick = {
+                        val builder = AlertDialog.Builder(context)
+                        builder.setMessage("Delete flashcard: \"${flashcard!!.term}\"?")
+                            .setCancelable(false)
+                            .setPositiveButton("Delete") { dialog, _ ->
+                                deleteFn(flashcard.id)
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                        val alert = builder.create()
+                        alert.show()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                    )
+                }
+                FloatingActionButton(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
+                            putExtra(SearchManager.QUERY, flashcard!!.term)
+                        }
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search this term on Google",
+                    )
+                }
+            }
+        }
+    }
+}
+
