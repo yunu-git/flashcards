@@ -35,7 +35,6 @@ fun EditFlashcardScreen(
 ) {
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
-    val context = LocalContext.current
     val selectedFlashcardState by flashcardViewModel.selectedFlashcard.collectAsState(null)
     val flashcard: Flashcard? = selectedFlashcardState // we explicitly assign to note to help the compilers smart cast out
 
@@ -47,145 +46,21 @@ fun EditFlashcardScreen(
         }
     }
 
-
-    if (isPortrait) {
-        VerticalEditFlashcard(
-            flashcardId = flashcardId,
-            navController = navController,
-            term = editFlashcardViewModel.term,
-            onTermChange = { it -> editFlashcardViewModel.updateTerm(it) },
-            definitions = editFlashcardViewModel.answers,
-            onDefinitionChange = { newDefinitions -> editFlashcardViewModel.updateAnswers(newDefinitions) },
-            editFlashcardFn = {id, newFlashcard -> flashcardViewModel.editFlashcardById(id, newFlashcard)},
-            editFlashcardViewModel = editFlashcardViewModel,
-        )
-    } else {
-        HorizontalEditFlashcard(
-            flashcardId = flashcardId,
-            navController = navController,
-            term = editFlashcardViewModel.term,
-            onTermChange = { it -> editFlashcardViewModel.updateTerm(it) },
-            definitions = editFlashcardViewModel.answers,
-            onDefinitionChange = { newDefinitions -> editFlashcardViewModel.updateAnswers(newDefinitions) },
-            editFlashcardFn = {id, newFlashcard -> flashcardViewModel.editFlashcardById(id, newFlashcard)},
-            editFlashcardViewModel = editFlashcardViewModel,
-        )
-    }
+    EditFlashcard(
+        flashcardId = flashcardId,
+        navController = navController,
+        term = editFlashcardViewModel.term,
+        onTermChange = { it -> editFlashcardViewModel.updateTerm(it) },
+        definitions = editFlashcardViewModel.answers,
+        onDefinitionChange = { newDefinitions -> editFlashcardViewModel.updateAnswers(newDefinitions) },
+        editFlashcardFn = {id, newFlashcard -> flashcardViewModel.editFlashcardById(id, newFlashcard)},
+        editFlashcardViewModel = editFlashcardViewModel,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VerticalEditFlashcard(
-    flashcardId: String,
-    navController: NavController,
-    term: String,
-    onTermChange: (String) -> Unit,
-    definitions: List<Answer>,
-    onDefinitionChange: (List<Answer>) -> Unit,
-    editFlashcardFn: (Int?, Flashcard) -> Unit,
-    editFlashcardViewModel: EditFlashcardViewModel,
-) {
-    val context = LocalContext.current
-    val scrollState = rememberScrollState()
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 60.dp)
-                .verticalScroll(scrollState),
-        ) {
-            OutlinedTextField(
-                value = term,
-                onValueChange = { onTermChange(it) },
-                label = { Text("Term") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                isError = term.isBlank()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            definitions.forEachIndexed { index, answer ->
-                DefinitionEntry(
-                    definitions = definitions,
-                    index = index,
-                    answer = answer,
-                    viewModel = editFlashcardViewModel,
-                    onDefinitionChange = onDefinitionChange,
-                    context = context
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp)
-                .padding(top = 8.dp)
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-
-            ) {
-            Button(
-                onClick = {
-                    val newDefinitions = definitions.toMutableList()
-                    newDefinitions.add(Answer(text = "", isCorrect = false))
-                    onDefinitionChange(newDefinitions)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            ) {
-                Text(text = "+ Add Definition")
-            }
-
-            Button(
-                onClick = {
-                    val builder = AlertDialog.Builder(context)
-                    editFlashcardFn(
-                        flashcardId.toIntOrNull(),
-                        Flashcard(
-                            flashcardId.toInt(),
-                            editFlashcardViewModel.term,
-                            editFlashcardViewModel.answers
-                        ))
-                    builder.setMessage("Edited flashcard!")
-                        .setCancelable(false)
-                        .setPositiveButton("Ok") { dialog, _ ->
-                            onTermChange("")
-                            onDefinitionChange(listOf(Answer("", false), Answer("", false)))
-                            navController.navigate("flashcardList")
-                        }
-                        .setNegativeButton("Cancel") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-
-                    val alert = builder.create()
-                    alert.show()
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-                enabled = term.isNotBlank() && definitions.any { d ->
-                    d.isCorrect && d.text.isNotBlank()
-                }
-            ) {
-                Text(text = "Save")
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HorizontalEditFlashcard(
+fun EditFlashcard(
     flashcardId: String,
     navController: NavController,
     term: String,

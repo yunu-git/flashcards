@@ -42,7 +42,7 @@ import nz.ac.canterbury.seng303.as1.models.Flashcard
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
 
 @Composable
-fun ViewFlashcard(
+fun ViewFlashcardScreen(
     flashcardId: String,
     navController: NavController,
     flashcardViewModel: FlashcardViewModel
@@ -91,23 +91,13 @@ fun ViewFlashcard(
                     textAlign = TextAlign.Center
                 )
             } else {
-                if (isPortrait) {
-                    VerticalFlashcardView(
-                        navController = navController,
-                        deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
-                        flashcard = flashcard,
-                        flipped = flipped,
-                        onFlip = { flipped = !flipped }
-                    )
-                } else {
-                    HorizontalFlashcardView(
-                        navController = navController,
-                        deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
-                        flashcard = flashcard,
-                        flipped = flipped,
-                        onFlip = { flipped = !flipped }
-                    )
-                }
+                FlashcardView(
+                    navController = navController,
+                    deleteFn = { id -> flashcardViewModel.deleteFlashcardById(id) },
+                    flashcard = flashcard,
+                    flipped = flipped,
+                    onFlip = { flipped = !flipped }
+                )
             }
         }
     }
@@ -115,84 +105,7 @@ fun ViewFlashcard(
 
 
 @Composable
-fun VerticalFlashcardView(
-    navController: NavController,
-    deleteFn: (Int) -> Unit,
-    flashcard: Flashcard,
-    flipped: Boolean,
-    onFlip: () -> Unit
-) {
-    val context = LocalContext.current
-
-    val rotation by animateFloatAsState(
-        targetValue = if (flipped) 180f else 0f,
-        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
-        label = ""
-    )
-
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(240.dp)
-            .padding(16.dp)
-            .clickable { onFlip() }
-            .graphicsLayer {
-                rotationY = rotation
-                cameraDistance = 12f * density
-            },
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        ),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        rotationY = rotation
-                        cameraDistance = 12f * density
-                    }
-            ) {
-                if (!flipped) {
-                    Text(
-                        text = flashcard.term,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    )
-                } else {
-                    Text(
-                        text = flashcard.answers.firstOrNull { a -> a.isCorrect }?.text ?: "No answer available",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HorizontalFlashcardView(
+fun FlashcardView(
     navController: NavController,
     deleteFn: (Int) -> Unit,
     flashcard: Flashcard,

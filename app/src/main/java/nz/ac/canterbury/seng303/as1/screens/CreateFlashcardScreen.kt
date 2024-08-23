@@ -32,36 +32,20 @@ fun CreateFlashcardScreen(
     createFlashcardFn: (String, List<Answer>) -> Unit,
     viewModel: CreateFlashcardViewModel
 ) {
-    val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
-
-
-    if (isPortrait) {
-        VerticalCreateFlashcard(
-            navController = navController,
-            term = viewModel.term,
-            onTermChange = { it -> viewModel.updateTerm(it) },
-            definitions = viewModel.answers,
-            onDefinitionChange = { newDefinitions -> viewModel.updateAnswers(newDefinitions) },
-            createFlashcardFn = createFlashcardFn,
-            viewModel = viewModel
-        )
-    } else {
-        HorizontalCreateFlashcard(
-            navController = navController,
-            term = viewModel.term,
-            onTermChange = { it -> viewModel.updateTerm(it) },
-            definitions = viewModel.answers,
-            onDefinitionChange = { newDefinitions -> viewModel.updateAnswers(newDefinitions) },
-            createFlashcardFn = createFlashcardFn,
-            viewModel = viewModel
-        )
-    }
+    CreateFlashcard(
+        navController = navController,
+        term = viewModel.term,
+        onTermChange = { it -> viewModel.updateTerm(it) },
+        definitions = viewModel.answers,
+        onDefinitionChange = { newDefinitions -> viewModel.updateAnswers(newDefinitions) },
+        createFlashcardFn = createFlashcardFn,
+        viewModel = viewModel
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VerticalCreateFlashcard(
+fun CreateFlashcard(
     navController: NavController,
     term: String,
     onTermChange: (String) -> Unit,
@@ -133,114 +117,6 @@ fun VerticalCreateFlashcard(
                 onClick = {
                     if (term.isNotBlank() && definitions.any { d ->
                     d.isCorrect && d.text.isNotBlank() }) {
-                        val builder = AlertDialog.Builder(context)
-                        createFlashcardFn(term, definitions)
-                        builder.setMessage("Created flashcard!")
-                            .setCancelable(false)
-                            .setPositiveButton("Ok") { dialog, _ ->
-                                onTermChange("")
-                                onDefinitionChange(listOf(Answer("", false), Answer("", false)))
-                                navController.navigate("flashcardList")
-                            }
-                            .setNegativeButton("Cancel") { dialog, _ ->
-                                dialog.dismiss()
-                            }
-
-                        val alert = builder.create()
-                        alert.show()
-                    } else {
-                        Toast.makeText(context, "Please add a term, at least two definitions, and one answer.", Toast.LENGTH_LONG).show()
-                    }
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (term.isNotBlank() && definitions.any { d -> d.isCorrect && d.text.isNotBlank() }) Color(ContextCompat.getColor(context, R.color.theme_color)) else Color.LightGray
-                )
-            ) {
-                Text(text = "Save")
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HorizontalCreateFlashcard(
-    navController: NavController,
-    term: String,
-    onTermChange: (String) -> Unit,
-    definitions: List<Answer>,
-    onDefinitionChange: (List<Answer>) -> Unit,
-    createFlashcardFn: (String, List<Answer>) -> Unit,
-    viewModel: CreateFlashcardViewModel
-) {
-    val context = LocalContext.current
-    val scrollState = rememberScrollState()
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 60.dp)
-                .verticalScroll(scrollState),
-        ) {
-            OutlinedTextField(
-                value = term,
-                onValueChange = { onTermChange(it) },
-                label = { Text("Term") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                isError = term.isBlank()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            definitions.forEachIndexed { index, answer ->
-                DefinitionEntry(
-                    definitions = definitions,
-                    index = index,
-                    answer = answer,
-                    viewModel = viewModel,
-                    onDefinitionChange = onDefinitionChange,
-                    context = context
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp)
-                .padding(top = 8.dp)
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-
-            ) {
-            Button(
-                onClick = {
-                    val newDefinitions = definitions.toMutableList()
-                    newDefinitions.add(Answer(text = "", isCorrect = false))
-                    onDefinitionChange(newDefinitions)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            ) {
-                Text(text = "+ Add Definition")
-            }
-
-            Button(
-                onClick = {
-                    if (term.isNotBlank() && definitions.any { d ->
-                            d.isCorrect && d.text.isNotBlank() }) {
                         val builder = AlertDialog.Builder(context)
                         createFlashcardFn(term, definitions)
                         builder.setMessage("Created flashcard!")

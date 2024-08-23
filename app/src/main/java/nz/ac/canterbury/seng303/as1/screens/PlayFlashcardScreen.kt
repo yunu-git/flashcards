@@ -43,7 +43,6 @@ import nz.ac.canterbury.seng303.as1.R
 import nz.ac.canterbury.seng303.as1.models.Answer
 import nz.ac.canterbury.seng303.as1.models.Flashcard
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
-import nz.ac.canterbury.seng303.as1.viewmodels.PlayFlashcardsViewModel
 import kotlin.random.Random
 
 @Composable
@@ -52,7 +51,6 @@ fun PlayFlashcardScreen(
     flashcardViewModel: FlashcardViewModel
 ) {
     flashcardViewModel.getShuffledFlashcards()
-    val configuration = LocalConfiguration.current
     val context = LocalContext.current
     val shuffledFlashcards: List<Flashcard> by flashcardViewModel.shuffledFlashcards.collectAsState(emptyList())
 
@@ -85,172 +83,44 @@ fun PlayFlashcardScreen(
             }
         }
     } else {
-//        if (isPortrait) {
-            VerticalPlayFlashcards(
+            PlayFlashcards(
                 navController = navController,
-                flashcards = shuffledFlashcards,
+                flashcardViewModel = flashcardViewModel,
                 context = context
             )
-//        } else {
-//            HorizontalPlayFlashcards(
-//                navController = navController,
-//                flashcards = shuffledFlashcards,
-//                context = context
-//            )
-//        }
+
     }
 }
 
 @Composable
-fun VerticalPlayFlashcards(
+fun PlayFlashcards(
     navController: NavController,
-    flashcards: List<Flashcard>,
-    context: Context,
-
-) {
-    var currentIndex by rememberSaveable { mutableIntStateOf(0) }
-    var selectedAnswer by rememberSaveable { mutableStateOf<Answer?>(null) }
-    var score by rememberSaveable { mutableIntStateOf(0) }
-    var showResult by rememberSaveable { mutableStateOf(false) }
-    var showEndScreen by rememberSaveable { mutableStateOf(false) }
-    val flashcard = flashcards.getOrNull(currentIndex)
-
-    if (showEndScreen) {
-        VerticalPlayFlashcardEndScreen(
-            score = score,
-            totalQuestions = flashcards.size,
-            onRestart = {
-                currentIndex = 0
-                selectedAnswer = null
-                score = 0
-                showResult = false
-                showEndScreen = false
-            },
-            onExit = {
-                navController.navigate("/home")
-            },
-            context = context
-        )
-    } else {
-        flashcard?.let { card ->
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Question: ${currentIndex + 1} of ${flashcards.size}",
-                    fontSize = 15.sp,
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
-                Text(
-                    text = card.term,
-                    fontSize = 20.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
-                Text(
-                    text = "Score: $score",
-                    fontSize = 15.sp,
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                card.answers.forEach { answer ->
-                    AnswerButton(
-                        answer = answer,
-                        onClick = {
-                            if (!showResult) {
-                                selectedAnswer = answer
-                            }
-                        },
-                        selectedAnswer = selectedAnswer == answer,
-                        context = context,
-                        showResult = showResult
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                if (showResult) {
-
-                    Button(
-                        onClick = {
-                            if (currentIndex < flashcards.size - 1) {
-                                currentIndex++
-                                selectedAnswer = null
-                                showResult = false
-                            } else {
-                                showEndScreen = true
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "Next")
-                    }
-                } else {
-
-                    Button(
-                        onClick = {
-                            showResult = true
-                            if (selectedAnswer!!.isCorrect) {
-                                score++
-                            }
-                        },
-                        enabled = selectedAnswer != null,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "Submit")
-                    }
-                }
-
-
-            }
-        } ?: run {
-            Text(text = "No flashcards available", modifier = Modifier.fillMaxSize(), color = Color.Red)
-        }
-    }
-}
-
-@Composable
-fun HorizontalPlayFlashcards(
-    navController: NavController,
-    flashcards: List<Flashcard>,
+    flashcardViewModel: FlashcardViewModel = viewModel(),
     context: Context
 ) {
-    var currentIndex by rememberSaveable { mutableIntStateOf(0) }
-    var selectedAnswer by rememberSaveable { mutableStateOf<Answer?>(null) }
-    var score by rememberSaveable { mutableIntStateOf(0) }
-    var showResult by rememberSaveable { mutableStateOf(false) }
-    var showEndScreen by rememberSaveable { mutableStateOf(false) }
-    val flashcard = flashcards.getOrNull(currentIndex)
+
+    val flashcards by flashcardViewModel.shuffledFlashcards.collectAsState()
+    val currentIndex by flashcardViewModel.currentIndex.collectAsState()
+    val selectedAnswer by flashcardViewModel.selectedAnswer.collectAsState()
+    val score by flashcardViewModel.score.collectAsState()
+    val showResult by flashcardViewModel.showResult.collectAsState()
+    val showEndScreen by flashcardViewModel.showEndScreen.collectAsState()
+
     if (showEndScreen) {
-        VerticalPlayFlashcardEndScreen(
+        PlayFlashcardEndScreen(
             score = score,
             totalQuestions = flashcards.size,
             onRestart = {
-                currentIndex = 0
-                selectedAnswer = null
-                score = 0
-                showResult = false
-                showEndScreen = false
+                flashcardViewModel.restartGame()
             },
             onExit = {
-                navController.navigate("/home")
+                flashcardViewModel.restartGame()
+                navController.navigate("Home")
             },
             context = context
         )
     } else {
-        flashcard?.let { card ->
-
+        flashcards.getOrNull(currentIndex)?.let { card ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -286,7 +156,7 @@ fun HorizontalPlayFlashcards(
                         answer = answer,
                         onClick = {
                             if (!showResult) {
-                                selectedAnswer = answer
+                                flashcardViewModel.selectAnswer(answer)
                             }
                         },
                         selectedAnswer = selectedAnswer == answer,
@@ -298,29 +168,18 @@ fun HorizontalPlayFlashcards(
                 Spacer(modifier = Modifier.weight(1f))
 
                 if (showResult) {
-
                     Button(
                         onClick = {
-                            if (currentIndex < flashcards.size - 1) {
-                                currentIndex++
-                                selectedAnswer = null
-                                showResult = false
-                            } else {
-                                showEndScreen = true
-                            }
+                            flashcardViewModel.nextFlashcard()
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(text = "Next")
                     }
                 } else {
-
                     Button(
                         onClick = {
-                            showResult = true
-                            if (selectedAnswer!!.isCorrect) {
-                                score++
-                            }
+                            flashcardViewModel.submitAnswer()
                         },
                         enabled = selectedAnswer != null,
                         modifier = Modifier.fillMaxWidth()
@@ -328,14 +187,11 @@ fun HorizontalPlayFlashcards(
                         Text(text = "Submit")
                     }
                 }
-
-
             }
         } ?: run {
             Text(text = "No flashcards available", modifier = Modifier.fillMaxSize(), color = Color.Red)
         }
     }
-
 }
 
 @Composable
@@ -366,7 +222,7 @@ fun AnswerButton(
 }
 
 @Composable
-fun VerticalPlayFlashcardEndScreen(
+fun PlayFlashcardEndScreen(
     score: Int,
     totalQuestions: Int,
     onRestart: () -> Unit,
@@ -401,7 +257,7 @@ fun VerticalPlayFlashcardEndScreen(
         Button(
             onClick = onExit,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(ContextCompat.getColor(context, R.color.dark_green))
+                containerColor = Color(ContextCompat.getColor(context, R.color.incorrect_red))
             ),
             modifier = Modifier.fillMaxWidth()
         ) {

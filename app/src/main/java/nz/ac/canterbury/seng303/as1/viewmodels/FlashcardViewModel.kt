@@ -147,8 +147,4 @@ class FlashcardViewModel(private val flashcardStorage: Storage<Flashcard>): View
         _showEndScreen.value = false
     }
 
-    fun exitGame() {
-        _showEndScreen.value = true
-    }
-
 }

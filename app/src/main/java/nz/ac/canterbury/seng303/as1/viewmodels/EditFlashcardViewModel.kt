@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import nz.ac.canterbury.seng303.as1.models.Answer
 import nz.ac.canterbury.seng303.as1.models.Flashcard
 
-class EditFlashcardViewModel(): ViewModel() {
+class EditFlashcardViewModel: ViewModel() {
     var term by mutableStateOf("")
         private set
 
@@ -25,7 +25,7 @@ class EditFlashcardViewModel(): ViewModel() {
     }
 
     fun updateAnswers(newAnswers: List<Answer>) {
-        answers = newAnswers;
+        answers = newAnswers
     }
 
     fun addAnswer(answer: Answer) {
