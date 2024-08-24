@@ -36,6 +36,7 @@ import nz.ac.canterbury.seng303.as1.screens.FlashcardList
 import nz.ac.canterbury.seng303.as1.screens.PlayFlashcardScreen
 import nz.ac.canterbury.seng303.as1.screens.ViewFlashcardScreen
 import nz.ac.canterbury.seng303.as1.ui.theme.As1Theme
+import nz.ac.canterbury.seng303.as1.viewmodels.AppBarViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.CreateFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.EditFlashcardViewModel
 import nz.ac.canterbury.seng303.as1.viewmodels.FlashcardViewModel
@@ -54,11 +55,19 @@ class MainActivity : ComponentActivity() {
             As1Theme {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val appBarViewModel: AppBarViewModel = viewModel()
+                appBarViewModel.init()
                 Scaffold(
                     topBar = {
                         // Add your AppBar content here
                         TopAppBar(
-                            title = { Text("Flashcards") },
+                            title = {
+                                navBackStackEntry?.destination?.route?.let { route ->
+                                    appBarViewModel.getNameById(route)?.run {
+                                        Text(this)
+                                    }
+                                }
+                            },
                             navigationIcon = {
                                 if (navBackStackEntry?.destination?.route != "Home") {
                                     IconButton(onClick = { navController.popBackStack() }) {

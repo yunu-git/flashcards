@@ -64,6 +64,11 @@ fun CreateFlashcard(
                 .padding(bottom = 60.dp)
                 .verticalScroll(scrollState),
         ) {
+            Text(
+                text = "Enter a term and some definitions, and select the correct definition.",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(10.dp)
+            )
             OutlinedTextField(
                 value = term,
                 onValueChange = { onTermChange(it) },
