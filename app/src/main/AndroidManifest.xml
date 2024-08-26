@@ -16,6 +16,7 @@
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.As1.SplashScreen"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
